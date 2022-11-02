@@ -184,16 +184,15 @@ run_instance("../toys/NN_25/10/random1042_10_2.lp", ["qiskit_M", "our_M"], d, [0
 
 
 # ANALYZE DATABASE
-bvars = np.arange(11, 13)
-n_samples = 10
+bvars = np.arange(6, 25, 3)
+n_samples = 200
 M_strategies = ["our_M", "qiskit_M"]
-#M_strategies = ["our_M"]
-test_set = "../toys/NN_linear_deg5"
+test_set = "../toys/PO_part3_ra05"
 analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic = True, True, False
 data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic)
 
 
 # Save Datas()
-""" file = open("../data/SPP_p15_qite.txt", "wb")
+file = open("../data/PO_part3_ra05.txt", "wb")
 pickle.dump(data, file)
-file.close() """
+file.close()
