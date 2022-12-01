@@ -1,6 +1,4 @@
 from os import listdir, environ
-#environ['MKL_NUM_THREADS']='1'
-
 import numpy as np
 from scipy.linalg import cholesky
 from qiskit_optimization.algorithms import OptimizationResultStatus
@@ -179,20 +177,20 @@ def evaluate_feasibility(p, x, data, indexes):
 
 
 # run single instance
-""" d = Datas([10], 1, 2)
-run_instance("../toys/NN_25/10/random1042_10_2.lp", ["qiskit_M", "our_M"], d, [0,0], True, True, True)  """
+""" d = Datas([4], 1, 1)
+run_instance("../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0], True, True, False)  """
 
 
 # ANALYZE DATABASE
 bvars = np.arange(6, 25, 3)
 n_samples = 200
 M_strategies = ["our_M", "qiskit_M"]
-test_set = "../toys/PO_part3_ra05"
+test_set = "../toys/PO_sp500_part3_ra10"
 analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic = True, True, False
 data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic)
 
 
 # Save Datas()
-file = open("../data/PO_part3_ra05.txt", "wb")
+""" file = open("../data/PO_sp500_part3_ra10.txt", "wb")
 pickle.dump(data, file)
-file.close()
+file.close() """

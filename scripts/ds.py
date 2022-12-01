@@ -104,10 +104,7 @@ class Problem():
         L = self.obj_linear + np.diag(self.obj_quadratic)
         Q = self.obj_quadratic
         n = self.n_vars
-        # this loop is not needed since we don't access Q_ii anymore
-        #for i in range(n):
-        #    Q[i,i] = 0
-        
+
         # then we map it to the J and h matrix of the Ising formulation
         h = np.ndarray(n)
         J = np.zeros((n, n))
@@ -118,6 +115,7 @@ class Problem():
             const_term += np.sum(Q[i, i+1:])/4
             for j in range(i+1, n):
                 J[i,j] = Q[i,j]/4
+
         return J, h
 
 
@@ -132,8 +130,11 @@ class Problem():
         Q = A.T.dot(A)
         # make Q triangular
         Q = np.triu(Q + Q.T - np.diag(np.diag(Q)))
-        L = -2*A.T.dot(b)
+        L = -2*b.T.dot(A) # it's equivalent, but before it was -2*A.T.dot(b)
         const_term = b.T.dot(b) # not returned but we compute it if we need it in the future
+        # move diagonal terms of Q into L
+        L += np.diag(Q)
+        np.fill_diagonal(Q, 0)
         return Q, L, const_term
 
 
@@ -144,12 +145,6 @@ class Problem():
         Q, L, old_const_term = self.constraints_to_qubo_form()
         n = self.n_vars
 
-        # move terms from diagonal
-        L += np.diag(Q)
-        # this loop is not needed since we don't access Q_ii anymore
-        #for i in range(self.n_vars):
-        #    Q[i,i] = 0
-    
         # map to ising formulation
         h = np.ndarray(n)
         J = np.zeros((n, n))
@@ -160,6 +155,7 @@ class Problem():
             const_term += np.sum(Q[i, i+1:])/4
             for j in range(i+1, n):
                 J[i,j] = Q[i,j]/4
+
         return J, h, const_term
 
     
