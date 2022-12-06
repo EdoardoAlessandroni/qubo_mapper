@@ -59,7 +59,8 @@ def rand_sym_matrix_degree(size, max_degree):
     if max_degree >= size:
         max_degree = size-1
 
-    # algorithm to generate a random quasi-regular graph of max_degree
+    # algorithm t
+    # o generate a random quasi-regular graph of max_degree
     zeroset = [(i,j) for i in range(size) for j in range(i+1,size)]
     rem_links = (max_degree*np.ones(size)).astype("int")
     for i in range(size-1):
@@ -260,8 +261,8 @@ print(p.qp.export_as_lp_string()) """
 #print("\n\n\nChange hardcoded parameters in line 123 if you're changing degree or p_baseline\n\n\n")
 
 # BUILD DATABASE
-bvars = np.arange(6, 31)
+""" bvars = np.arange(6, 31)
 degree = 5
 n_samples = 1000
 for nvars in bvars:
-    build_database("../toys/SPP_p15", "NN", n_samples, nvars, max_degree = degree, SPP=True)
+    build_database("../toys/SPP_p15", "NN", n_samples, nvars, max_degree = degree, SPP=True) """

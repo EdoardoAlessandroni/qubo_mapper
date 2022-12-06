@@ -103,11 +103,12 @@ def run_instance(filename, M_strategies, data, indexes, analyze_gaps, analyze_ga
         if analyze_gaps:
             H = p.get_obj_hamiltonian()
             Hc = p.get_constraint_hamiltonian()
-            data.gap[indexes[0], indexes[1], M_idx] = p.get_gap_total(H, Hc, M)
+            d = p.get_gap_total(H, Hc, M)
+            data.gap[indexes[0], indexes[1], M_idx] = d
             if analyze_gaps_qite:
                 H = H + M*Hc
                 min_e, max_e = np.min(H), np.max(H) # max - min gives the spectral width
-                data.gap_norm[indexes[0], indexes[1], M_idx] = data.gap[indexes[0], indexes[1], M_idx] / (max_e - min_e) # dividing by spectral width gives gap of Hamiltonian shifted and squeezed s.t. spectrum is in [0,1]
+                data.gap_norm[indexes[0], indexes[1], M_idx] = d / (max_e - min_e) # dividing by spectral width gives gap of Hamiltonian shifted and squeezed s.t. spectrum is in [0,1]
                 if analyze_gaps_adiabatic:
                     beta = np.max(np.abs([min_e, max_e])) / bvars # = spectral gap of unshifted and unsqueezed H / bvars
                     if M_idx == 0:
@@ -182,12 +183,12 @@ run_instance("../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0],
 
 
 # ANALYZE DATABASE
-bvars = np.arange(6, 25, 3)
+""" bvars = np.arange(6, 25, 3)
 n_samples = 200
 M_strategies = ["our_M", "qiskit_M"]
 test_set = "../toys/PO_sp500_part3_ra10"
 analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic = True, True, False
-data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic)
+data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps, analyze_gaps_qite, analyze_gaps_adiabatic) """
 
 
 # Save Datas()
