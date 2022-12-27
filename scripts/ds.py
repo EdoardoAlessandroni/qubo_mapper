@@ -6,8 +6,9 @@ from qiskit_optimization.algorithms import CplexOptimizer
 import cplex
 import time
 
+# Classes built here: Datas, Problem
 
-def initial_hamiltonian_adiabatic(n):
+""" def initial_hamiltonian_adiabatic(n):
     H = -kron_x_i(0,n)
     for i in range(1, n):
         H -= kron_x_i(i, n)
@@ -18,9 +19,9 @@ def kron_x_i(i, n):
     id1 = np.eye(int(2**(i)))
     id2 = np.eye(int(2**(n-i-1)))
     return np.kron( np.kron(id1, x), id2 )
+ """
 
-
-# get data over many runs with class Datas
+# get relevant data over many instances and bumber of variables with class Datas
 class Datas():
     def __init__(self, bvars, n_samples, n_M_strategies):
         self.bvars = bvars
@@ -40,22 +41,8 @@ class Datas():
         self.max_violation = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = int)
         self.time = np.ndarray((n_bvars, n_samples, n_M_strategies))
 
-class Datas_ame():
-    def __init__(self, bvars, n_samples):
-        self.bvars = bvars
-        n_bvars = len(bvars) # bvars is a list containing the number of binary variables we wish to investigate, not necessarily consecutive
-        # gaps are multiplied by -100 to spot problems: if we dont compute gaps but we plot it it's clear that we shouldn't look at it since that's negative
-        self.gap_qite = -100*np.ones((n_bvars, n_samples)) # gap referring to    [H_ob + M H_c] / norm(H_ob + M H_c)  useful for QITE approach
-        self.fval_classic = np.ndarray((n_bvars, n_samples), dtype = int)
-        self.is_optimum = np.zeros((n_bvars, n_samples), dtype = bool)
-        self.is_feasible = np.zeros((n_bvars, n_samples), dtype = bool)
-        self.time = np.ndarray((n_bvars, n_samples))
-    
-        self.fvals = []
-        self.Ms = []
-        self.violation_nums = []
 
-# class Problem to tie together the QuadraticProgram from qiskit, its Ising formulation, the Ising formualtion of the constraints and their respective (obj and constraints) Hermitian matrix representation 2^n x 2^n.
+# class Problem to tie together the QuadraticProgram from qiskit, its Ising formulation, the Ising formualtion of the constraints and their respective (obj and constraints) Hamiltonian matrix representation 2^n x 2^n.
 # It also deals with solving the problem with different M strategies
 class Problem():
     def __init__(self, quadratic_problem):
@@ -249,15 +236,8 @@ class Problem():
         elif M_strategy == "our_M":
             M = self.our_M()
             converter = LinearEqualityToPenalty(penalty = M)
-        elif M_strategy == "naive_M":
-            M = self.naive_M()
-            converter = LinearEqualityToPenalty(penalty = M)
         elif M_strategy == "optimal_M":
             M = self.optimal_M()
-            converter = LinearEqualityToPenalty(penalty = M)
-        elif M_strategy[:6] == "our_M*":
-            multiplier = float(M_strategy[6:])
-            M = self.our_M()*multiplier
             converter = LinearEqualityToPenalty(penalty = M)
         else:
             raise ValueError(f"M_strategy {M_strategy} not known")
@@ -268,12 +248,6 @@ class Problem():
         result = CplexOptimizer(disp = False).solve(qubo)
         tac = time.time()
         return result, M, tac - tic
-
-
-    def naive_M(self): # adds all positive coefficients in Q matrix and L vector of the objective function
-        L = self.obj_linear
-        Q = self.obj_quadratic
-        return np.sum(L*(L>0)) + np.sum(Q*(Q>0)) - np.sum(L*(L<0)) - np.sum(Q*(Q<0))
 
     def optimal_M(self):
         # find and evaluate feasible solution

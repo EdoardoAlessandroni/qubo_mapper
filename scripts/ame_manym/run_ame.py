@@ -154,7 +154,7 @@ run_instance(filename, data, indexes, analyze_gaps) """
 
 
 # ANALYZE DATABASE
-bvars = np.arange(25, 26)
+bvars = np.arange(4, 26)
 n_samples = 200
 test_set = "../../toys/NN_linear_deg5"
 analyze_gaps = True
