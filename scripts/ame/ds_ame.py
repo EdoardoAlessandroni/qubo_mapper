@@ -31,6 +31,7 @@ class Datas():
         self.max_iter = np.ndarray((n_bvars, n_samples), dtype = int)
 
         # in following dictionaries, we frist recover the data by accessing with the key n_bvars_n_sample
+        #[n_bvars, n_samples, max_iter_tot]
         self.gaps = {} # gap referring to    H_ob + M H_c shifted and squeezed
         self.fvals = {}
         self.Ms = {}

@@ -154,14 +154,14 @@ run_instance(filename, data, indexes, analyze_gaps) """
 
 
 # ANALYZE DATABASE
-bvars = np.arange(20, 26)
+bvars = np.arange(25, 26)
 n_samples = 200
-test_set = "../../toys/SPP_p15"
+test_set = "../../toys/NN_linear_deg5"
 analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, analyze_gaps)
 
 
 # Save Datas()
-file = open("../../data/ame_manym/SPP_p15_from20.txt", "wb")
+file = open("../../data/ame_manym/NN_linear_deg5_25.txt", "wb")
 Pdump(data, file)
 file.close()
