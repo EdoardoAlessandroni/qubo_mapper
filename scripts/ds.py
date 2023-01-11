@@ -89,13 +89,14 @@ class Problem():
         '''
         # first we move the terms of the form q_ii x_i x_i to the linear vector as x_i^2 = x_1
         L = self.obj_linear + np.diag(self.obj_quadratic)
-        Q = self.obj_quadratic
+        Q = self.obj_quadratic - np.diag(np.diag(self.obj_quadratic)) ### THAT WAS CHANGED
+        const = self.qp.objective.constant  ### THAT WAS ADDED
         n = self.n_vars
 
         # then we map it to the J and h matrix of the Ising formulation
         h = np.ndarray(n)
         J = np.zeros((n, n))
-        const_term = np.sum(L)/2
+        const_term = np.sum(L)/2 + const
 
         for i in range(n):
             h[i] = L[i]/2 + (np.sum(Q[i, i+1:]) + np.sum(Q[:i, i]))/4
@@ -103,7 +104,7 @@ class Problem():
             for j in range(i+1, n):
                 J[i,j] = Q[i,j]/4
 
-        return J, h
+        return J, h, const_term  ### THAT WAS CHANGED
 
 
     def constraints_to_qubo_form(self):
@@ -131,6 +132,10 @@ class Problem():
         '''
         Q, L, old_const_term = self.constraints_to_qubo_form()
         n = self.n_vars
+
+        # move terms from diagonal # THAT WAS ADDED
+        L += np.diag(Q)             # THAT WAS ADDED
+        Q -= np.diag(np.diag(Q))    # THAT WAS ADDED
 
         # map to ising formulation
         h = np.ndarray(n)
@@ -196,8 +201,8 @@ class Problem():
 
 
     def get_obj_hamiltonian(self):
-        J, h = self.to_ising()
-        return self.from_ising_to_hamiltonian(J, h)
+        J, h, const = self.to_ising() # THAT WAS changed
+        return self.from_ising_to_hamiltonian(J, h, const) # THAT WAS changed
     
     
     def get_constraint_hamiltonian(self):
@@ -214,14 +219,13 @@ class Problem():
 
 
     def get_gap_objective(self, evs_H):
-        evs = np.unique(evs_H)
-        #evs = np.partition(evs, kth=1)[:2]
+        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
         return evs[1] - evs[0]
     
 
     def get_gap_total(self, H, Hc, M):
         evs = H + M*Hc
-        evs = np.unique(evs) # already sorted
+        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
         #evs = np.partition(evs, kth=1)[:2]
         return evs[1] - evs[0]
     

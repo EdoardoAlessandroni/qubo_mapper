@@ -40,22 +40,8 @@ class Datas():
         self.max_violation = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = int)
         self.time = np.ndarray((n_bvars, n_samples, n_M_strategies))
 
-class Datas_ame():
-    def __init__(self, bvars, n_samples):
-        self.bvars = bvars
-        n_bvars = len(bvars) # bvars is a list containing the number of binary variables we wish to investigate, not necessarily consecutive
-        # gaps are multiplied by -100 to spot problems: if we dont compute gaps but we plot it it's clear that we shouldn't look at it since that's negative
-        self.gap_qite = -100*np.ones((n_bvars, n_samples)) # gap referring to    [H_ob + M H_c] / norm(H_ob + M H_c)  useful for QITE approach
-        self.fval_classic = np.ndarray((n_bvars, n_samples), dtype = int)
-        self.is_optimum = np.zeros((n_bvars, n_samples), dtype = bool)
-        self.is_feasible = np.zeros((n_bvars, n_samples), dtype = bool)
-        self.time = np.ndarray((n_bvars, n_samples))
-    
-        self.fvals = []
-        self.Ms = []
-        self.violation_nums = []
 
-# class Problem to tie together the QuadraticProgram from qiskit, its Ising formulation, the Ising formualtion of the constraints and their respective (obj and constraints) Hermitian matrix representation 2^n x 2^n.
+""" # class Problem to tie together the QuadraticProgram from qiskit, its Ising formulation, the Ising formualtion of the constraints and their respective (obj and constraints) Hermitian matrix representation 2^n x 2^n.
 # It also deals with solving the problem with different M strategies
 class Problem():
     def __init__(self, quadratic_problem):
@@ -356,4 +342,4 @@ class Problem():
         file = open(filename, "w")
         file.write(lp_string)
         file.close()
-        return
+        return """

@@ -25,6 +25,10 @@ def run_instance(filename, data, indexes, analyze_gaps):
     p = Problem(qp)
     p.qp.name = filename
 
+    if analyze_gaps:
+        H = p.get_obj_hamiltonian()
+        Hc = p.get_constraint_hamiltonian()
+
     # solve classically
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -37,9 +41,10 @@ def run_instance(filename, data, indexes, analyze_gaps):
     # solve iteratively with AME
     our_M = p.our_M()
     initialM_divider = 10
-    M = np.rint(our_M / initialM_divider).astype(int)
-    if M == 0:
-        M = 1
+    M = our_M / initialM_divider
+    #M = np.rint(our_M / initialM_divider).astype(int)
+    #if M == 0:
+    #    M = 1
     is_feas = False
     fvals, viol_nums, Ms, gaps = [],[],[],[]
     step = 0
@@ -48,36 +53,39 @@ def run_instance(filename, data, indexes, analyze_gaps):
         converter = LinearEqualityToPenalty(penalty = M)
         qubo = converter.convert(p.qp)
         res = CplexOptimizer(disp = False).solve(qubo)
-
         # check solution
         f, x = np.rint(res.fval).astype(int), np.rint( res.x ).astype(int)
         is_feas = p.qp.is_feasible(x)
-
         # get violation number
         k = 0
         violated_cons = p.qp.get_feasibility_info(x)[2]
         for cons in violated_cons:
             k += ( cons.evaluate(x) - cons.rhs )**2
         k = np.rint(k).astype(int)
-
         # save info
         viol_nums.append(k)
         Ms.append(M)
         fvals.append(f)
         if analyze_gaps:
-            H = p.get_obj_hamiltonian()
-            Hc = p.get_constraint_hamiltonian()
-            H = H + M*Hc
-            evs = np.unique(H) # already sorted
+            H_tot = H + M*Hc
+            evs = np.unique(H_tot.round(decimals=14))   ### THAT WAS CHANGED
+            #evs = np.unique(H) # already sorted
             gaps.append((evs[1] - evs[0]) / (evs[-1] - evs[0])) # dividing by spectral width gives gap of Hamiltonian shifted and squeezed s.t. spectrum is in [0,1]
-
         # map to next step
         M = min((k + 1)*M, our_M)
         step += 1
+    
+    # compute our_gap
+    if analyze_gaps:
+        H_tot = H + our_M*Hc
+        evs = np.unique(H_tot.round(decimals=14))
+        our_gap = (evs[1] - evs[0]) / (evs[-1] - evs[0])
         
     # fill data with relevant info
     data.max_iter[indexes[0],indexes[1]] = step
     data.gaps[f"{indexes[0]}_{indexes[1]}"] = gaps
+    data.our_M[indexes[0],indexes[1]] = our_M
+    data.our_gap[indexes[0],indexes[1]] = our_gap
     data.Ms[f"{indexes[0]}_{indexes[1]}"] = np.array((Ms)) # or = Ms
     data.fvals[f"{indexes[0]}_{indexes[1]}"] = np.array((fvals))
     data.violation_nums[f"{indexes[0]}_{indexes[1]}"] = np.array((viol_nums))
@@ -145,6 +153,6 @@ analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, analyze_gaps)
 
 # Save Datas()
-file = open("../../data/ame/NN_linear_deg5.txt", "wb")
+file = open("../../data/ame/NN_linear_deg5_newM0.txt", "wb")
 Pdump(data, file)
 file.close()

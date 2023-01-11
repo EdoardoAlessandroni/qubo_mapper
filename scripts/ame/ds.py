@@ -7,7 +7,7 @@ import cplex
 import time
 
 
-def initial_hamiltonian_adiabatic(n):
+""" def initial_hamiltonian_adiabatic(n):
     H = -kron_x_i(0,n)
     for i in range(1, n):
         H -= kron_x_i(i, n)
@@ -18,7 +18,7 @@ def kron_x_i(i, n):
     id1 = np.eye(int(2**(i)))
     id2 = np.eye(int(2**(n-i-1)))
     return np.kron( np.kron(id1, x), id2 )
-
+ """
 
 # get data over many runs with class Datas
 class Datas():
@@ -40,7 +40,7 @@ class Datas():
         self.max_violation = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = int)
         self.time = np.ndarray((n_bvars, n_samples, n_M_strategies))
 
-class Datas_ame():
+""" class Datas_ame():
     def __init__(self, bvars, n_samples):
         self.bvars = bvars
         n_bvars = len(bvars) # bvars is a list containing the number of binary variables we wish to investigate, not necessarily consecutive
@@ -356,4 +356,4 @@ class Problem():
         file = open(filename, "w")
         file.write(lp_string)
         file.close()
-        return
+        return """

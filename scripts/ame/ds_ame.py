@@ -29,6 +29,8 @@ class Datas():
         #self.time = np.ndarray((n_bvars, n_samples))
         self.fval_classic = np.ndarray((n_bvars, n_samples), dtype = int)
         self.max_iter = np.ndarray((n_bvars, n_samples), dtype = int)
+        self.our_M = np.ndarray((n_bvars, n_samples))
+        self.our_gap = np.ndarray((n_bvars, n_samples))
 
         # in following dictionaries, we frist recover the data by accessing with the key n_bvars_n_sample
         #[n_bvars, n_samples, max_iter_tot]
@@ -85,7 +87,8 @@ class Problem():
         '''
         # first we move the terms of the form q_ii x_i x_i to the linear vector as x_i^2 = x_1
         L = self.obj_linear + np.diag(self.obj_quadratic)
-        Q = self.obj_quadratic
+        Q = self.obj_quadratic - np.diag(np.diag(self.obj_quadratic)) ### THAT WAS CHANGED
+        const = self.qp.objective.constant  ### THAT WAS CHANGED
         n = self.n_vars
         # this loop is not needed since we don't access Q_ii anymore
         #for i in range(n):
@@ -94,14 +97,15 @@ class Problem():
         # then we map it to the J and h matrix of the Ising formulation
         h = np.ndarray(n)
         J = np.zeros((n, n))
-        const_term = np.sum(L)/2
+        const_term = np.sum(L)/2 + const
 
         for i in range(n):
             h[i] = L[i]/2 + (np.sum(Q[i, i+1:]) + np.sum(Q[:i, i]))/4
             const_term += np.sum(Q[i, i+1:])/4
             for j in range(i+1, n):
                 J[i,j] = Q[i,j]/4
-        return J, h
+        return J, h, const_term  ### THAT WAS CHANGED
+
 
 
     def constraints_to_qubo_form(self):
@@ -129,9 +133,7 @@ class Problem():
 
         # move terms from diagonal
         L += np.diag(Q)
-        # this loop is not needed since we don't access Q_ii anymore
-        #for i in range(self.n_vars):
-        #    Q[i,i] = 0
+        Q -= np.diag(np.diag(Q)) ### THAT WAS CHANGED
     
         # map to ising formulation
         h = np.ndarray(n)
@@ -196,8 +198,8 @@ class Problem():
 
 
     def get_obj_hamiltonian(self):
-        J, h = self.to_ising()
-        return self.from_ising_to_hamiltonian(J, h)
+        J, h, const = self.to_ising()
+        return self.from_ising_to_hamiltonian(J, h, const)
     
     
     def get_constraint_hamiltonian(self):
@@ -213,16 +215,14 @@ class Problem():
         return
 
 
-    def get_gap_objective(self, evs_H):
-        evs = np.unique(evs_H)
-        #evs = np.partition(evs, kth=1)[:2]
+    def get_gap_objective(self, evs):
+        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
         return evs[1] - evs[0]
     
 
     def get_gap_total(self, H, Hc, M):
         evs = H + M*Hc
-        evs = np.unique(evs) # already sorted
-        #evs = np.partition(evs, kth=1)[:2]
+        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
         return evs[1] - evs[0]
     
     def solve_exact(self):

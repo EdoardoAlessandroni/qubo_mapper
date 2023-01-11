@@ -102,7 +102,7 @@ def run_instance(filename, M_strategies, data, indexes, analyze_gaps):
             H = p.get_obj_hamiltonian()
             Hc = p.get_constraint_hamiltonian()
             H = H + M*Hc # that's all diagonal!
-            evs = np.unique(H) # already ordered
+            evs = np.unique(H.round(decimals=14))   ### THAT WAS CHANGED
             data.gap_norm[indexes[0], indexes[1], M_idx] = (evs[1] - evs[0])/(evs[-1] - evs[0]) # dividing by spectral width gives gap of Hamiltonian shifted and squeezed s.t. spectrum is in [0,1]
     return p, xs
 
@@ -165,15 +165,16 @@ run_instance("../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0],
 
 
 # ANALYZE DATASET
-bvars = np.arange(6, 13, 3)
+""" bvars = np.arange(6, 19)
 n_samples = 200
 M_strategies = ["our_M", "qiskit_M"]
-test_set = "../toys/PO_sp500_part3_ra10"
+#M_strategies = ["optimal_M"]
+test_set = "../toys/SPP_p25"
 analyze_gaps = True
-data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
+data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps) """
 
 
 # Save Datas()
-file = open("../data/PO_sp500_part3_ra10_cleancode.txt", "wb")
+""" file = open("../data/SPP_p25_testchangecode.txt", "wb")
 pickle.dump(data, file)
-file.close()
+file.close() """

@@ -9,9 +9,7 @@ import warnings
 from time import time
 from copy import deepcopy
 
-from ds_ame import Datas, Problem, Converter
-
-
+from ds_ame import Datas_ame, Problem, Converter
 
 
 def run_instance(filename, data, indexes, analyze_gaps):
@@ -71,19 +69,20 @@ def run_instance(filename, data, indexes, analyze_gaps):
         if analyze_gaps:
             p_qubo = Problem(qubo)
             H = p_qubo.get_obj_hamiltonian()
-            evs = np.unique(H) # already sorted
+            evs = np.unique(H.round(decimals=14))   ### THAT WAS CHANGED
             gap = (evs[1] - evs[0]) / (evs[-1] - evs[0])
             gaps.append(gap) # dividing by spectral width gives gap of Hamiltonian shifted and squeezed s.t. spectrum is in [0,1]
 
         # map to next step
         for j in range(m):
-            M_ls[j] = min((k[j] + 1)*M_ls[j], our_M*1.1)
+            #M_ls[j] = min((k[j]+1)*M_ls[j], our_M*1.1) # why tf is it 1.1?
+            M_ls[j] = min((k[j]+1)*M_ls[j], our_M)
         step += 1
 
     our_qubo = converter.convert( our_M*np.ones(m) )
     our_qubo = Problem(our_qubo)
     H = our_qubo.get_obj_hamiltonian()
-    evs = np.unique(H) # already sorted
+    evs = np.unique(H.round(decimals=14)) # already sorted
     our_gap = (evs[1] - evs[0]) / (evs[-1] - evs[0])
 
     # fill data with relevant info
@@ -91,6 +90,7 @@ def run_instance(filename, data, indexes, analyze_gaps):
     data.max_iter[indexes[0],indexes[1]] = step
     data.gaps[f"{indexes[0]}_{indexes[1]}"] = gaps
     data.our_gap[indexes[0],indexes[1]] = our_gap
+    data.our_M[indexes[0],indexes[1]] = our_M
     data.fvals[f"{indexes[0]}_{indexes[1]}"] = np.array((fvals))
     data.Ms[f"{indexes[0]}_{indexes[1]}"] = Ms
     data.violation_nums[f"{indexes[0]}_{indexes[1]}"] = viol_nums
@@ -103,7 +103,7 @@ def run_test(test_set, bvars, n_samples, analyze_gaps):
     '''
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
-    data = Datas(bvars, n_samples)
+    data = Datas_ame(bvars, n_samples)
     for i in range(len(bvars)):
         n_qubs = bvars[i]
         print("\n" + str(n_qubs))
@@ -149,19 +149,19 @@ def create_arr_from_dicts(data, m_max):
 
 
 # run single instance
-""" d = Datas([10], 1, 2)
+""" d = Datas_ame([10], 1, 2)
 run_instance(filename, data, indexes, analyze_gaps) """
 
 
 # ANALYZE DATABASE
-bvars = np.arange(4, 26)
+bvars = np.arange(21, 26)
 n_samples = 200
-test_set = "../../toys/NN_linear_deg5"
+test_set = "../../toys/SPP_p15"
 analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, analyze_gaps)
 
 
-# Save Datas()
-file = open("../../data/ame_manym/NN_linear_deg5_25.txt", "wb")
+# Save Datas_ame()
+file = open("../../data/ame_manym/SPP_p15_extension.txt", "wb")
 Pdump(data, file)
 file.close()
