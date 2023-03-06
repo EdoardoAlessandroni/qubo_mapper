@@ -1,0 +1,44 @@
+The data that needs to be analyzed for the paper are the ones in the different subdirectories present in `toys`, namely
+
+NN_linear_deg10
+NN_linear_deg5
+PO_sp500_part2_ra10_mult4
+PO_sp500_part3_ra10_mult2
+PO_sp500_part3_ra10_mult4
+PO_sp500_part3_ra20_mult4
+SPP_p15
+SPP_p25
+
+
+I fixed the numebr of samples to 1000 in the code, but you can change it if you want to debug something. To do so, just change the variable `n_samples` in the last lines of code in `codes/run_database.py`.
+
+As for the other settings to change, that's pretty easy, you just need to change the **name of the database** to be run and correspondingly the final file with analyzed data to be saved, for example, to analyze and save the computation done for the database SSP_15 just set:
+
+- test_set = "../toys/SPP_15" 
+at line 172 of `codes/run_database.py`
+- file = open("../data/SPP_15.txt", "wb")
+at line 178 of `codes/run_database.py`
+
+Finally, the last thing to be changed is the **number of binary variables** to test for. This is not uniform for all databases, so at line 169 of the code just set:
+
+- bvars = np.arange(6, 25, 3)
+for all PO databases with partition number 3, namely
+PO_sp500_part3_ra10_mult2
+PO_sp500_part3_ra10_mult4
+PO_sp500_part3_ra20_mult4
+
+- bvars = np.arange(6, 25, 2)
+for PO_sp500_part2_ra10_mult4
+
+- bvars = np.arange(6, 26)
+for all SPP databases, namely
+SPP_p15
+SPP_p25
+
+- bvars = np.arange(4, 26)
+for all NN databases, namely
+NN_linear_deg10
+NN_linear_deg5
+
+
+And that's it! Thank you :)
