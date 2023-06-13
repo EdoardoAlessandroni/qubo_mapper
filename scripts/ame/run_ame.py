@@ -146,13 +146,13 @@ run_instance("../toys/NN_25/10/random1042_10_2.lp", ["qiskit_M", "our_M"], d, [0
 
 
 # ANALYZE DATABASE
-bvars = np.arange(4, 26)
+bvars = np.arange(25, 26)
 n_samples = 200
-test_set = "../../toys/NN_linear_deg5"
+test_set = "../../toys/SPP_p15"
 analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, analyze_gaps)
 
 # Save Datas()
-file = open("../../data/ame/NN_linear_deg5_newM0.txt", "wb")
+file = open("../../data/ame/SPP_p15_newM0_25.txt", "wb")
 Pdump(data, file)
 file.close()
