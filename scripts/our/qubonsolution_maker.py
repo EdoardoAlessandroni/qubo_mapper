@@ -15,12 +15,12 @@ def build_qubo(n_qubs, folder, file, M_strat, towrite_folder):
 
     if M_strat == "qiskit_M":
         converter = LinearEqualityToPenalty()
-        M_folder = "qiskM"
+        M_folder = "qiskit_M"
         char = "Q"
     elif M_strat == "our_M":
         M = p.our_M()
         converter = LinearEqualityToPenalty(penalty = M)
-        M_folder = "ourM"
+        M_folder = "our_M"
         char = "O"
     elif M_strat == "babbush_M":
         M = p.babbush_M()
@@ -30,9 +30,9 @@ def build_qubo(n_qubs, folder, file, M_strat, towrite_folder):
 
     qubo = converter.convert(p.qp)
     qubo.name = char + file
-    filename = f"../easy_toys_adiabevol/{towrite_folder}/{M_folder}/{n_qubs}/{file}"
+    filename = f"../{towrite_folder}/{M_folder}/{n_qubs}/{file}"
     qubo.write_to_lp_file(filename)
-    #print(f"File {filename} wrote")
+    print(f"File {filename} wrote")
     return 
 
 def solve_qubo(n_qubs, folder, file, towrite_folder):
@@ -49,28 +49,16 @@ def solve_qubo(n_qubs, folder, file, towrite_folder):
     fval = np.rint(res.fval)
     x = np.rint(res.x).astype(int)
 
-    # qp.objective = -qp.objective
-    # p = Problem(qp)
-    # with warnings.catch_warnings():
-    #     warnings.simplefilter("ignore")
-    #     res_max = p.solve_exact()
-    # if res.status != OptimizationResultStatus.SUCCESS:
-    #     print(f"{filename} results to be infeasible, with status {res.status}")
-    # fval_max = -np.rint(res_max.fval)
-    # x_max = np.rint(res_max.x).astype(int)
-
-    filename = f"../easy_toys_adiabevol/{towrite_folder}/solution/{n_qubs}/{file}"
+    filename = f"../{towrite_folder}/solution/{n_qubs}/{file}"
 
     f = open(filename, "w")
     f.write(str(x) + "\n")
     f.write(str(fval) + "\n")
-    # f.write(str(x_max) + "\n")
-    # f.write(str(fval_max) + "\n")
     f.close()
 
     # write constrained problem as well
     qp.name = file
-    filename = f"../easy_toys_adiabevol/{towrite_folder}/constrained/{n_qubs}/{file}"
+    filename = f"../{towrite_folder}/constrained/{n_qubs}/{file}"
     qp.write_to_lp_file(filename)
     return 
 
@@ -88,16 +76,21 @@ def post_process_filenames(filenames):
     return new_filenames
 
 
+
+
+
+
+######## MAIN #########
+
 bvars = np.arange(21, 22)
-n_samples = 25
-M_strategies = ["our_M", "qiskit_M", "babbush_M"]
+n_samples = 10
+M_strategies = ["our_M", "qiskit_M"]
 test_set = "../../toys/PO_sp500_part3_ra10_mult2"
-towrite_folder = "PO_sp500_part3_ra10_mult2"
+towrite_folder = "easy_toys_adiabevol/PO_sp500_part3_ra10_mult2"
 
 for i in range(len(bvars)):
     n_qubs = bvars[i]
     print("\n" + str(n_qubs))
-
 
     folder = test_set+"/"+str(n_qubs)+"/"
     file_of_filenames = "../easy_toys_adiabevol/"+test_set[11:]+"/easy_inst21.txt"
@@ -109,21 +102,10 @@ for i in range(len(bvars)):
             break
         filenames.append(line[:-1])
     f.close()
-    filenames = post_process_filenames(filenames)
-    for sample, filename in enumerate(filenames):
+    filenames = sorted(post_process_filenames(filenames))
+
+    for sample, filename in enumerate(filenames[:n_samples]):
         print(sample, end = ", ")
         solve_qubo(n_qubs, folder, filename, towrite_folder)
         for M_strat in M_strategies:
             build_qubo(n_qubs, folder, filename, M_strat, towrite_folder)
-
-
-    # folder = test_set+"/"+str(n_qubs)+"/"
-    # files = sorted(listdir(folder))
-    # if len(files) < n_samples:
-    #     raise ValueError(f"Folder {folder} contains only {len(files)} instances, {n_samples} were requested")
-    # for sample in range(n_samples):
-    #     filename = folder + files[sample]
-    #     print(sample, end = ", ")
-    #     solve_qubo(n_qubs, folder, files[sample], towrite_folder)
-    #     for M_strat in M_strategies:
-    #         build_qubo(n_qubs, folder, files[sample], M_strat, towrite_folder)

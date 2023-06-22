@@ -277,7 +277,10 @@ class Problem():
         # find and evaluate feasible solution
         f_feas = self.get_feasible_sol_objective()
         # evaluate unconstrained and continuous problem
+        tic = time.time()
         f_unc = self.solve_unconstrained(how = "SDP")
+        tac = time.time()
+        print(f"SDP relaxation took {tac - tic} seconds")
         return f_feas - f_unc + .5
 
 

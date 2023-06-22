@@ -5,6 +5,7 @@ from docplex.mp.model_reader import ModelReader
 from qiskit_optimization.translators import from_docplex_mp
 import warnings
 from os import listdir
+from os import remove as osremove
 
 from ds import Problem
 
@@ -231,7 +232,8 @@ def build_instance(normalize_method, n, n_cons, test_set, density, max_degree, s
     if len(c_res.x) < n:
         print("Problem with less variables, trying another one")
         return build_instance(normalize_method, n, n_cons, test_set, density = density, max_degree = max_degree, seed = seed+1, to_file = to_file, SPP = SPP)
-    
+    osremove("./test_feasibility.lp")  # added line, still need to check if it works
+
     # write to LP file
     if to_file:
         filename = f"{test_set}/{n}/random{seed}_{n}_{n_cons}.lp"

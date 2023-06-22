@@ -1,7 +1,10 @@
-risk adversion = 1, multiplier = 10^3
+risk adversion = 1
 
-100 -> w=5, n_stocks=20
-200 -> w=5, n_stocks=40
-300 -> w=5, n_stocks=60
-400 -> w=5, n_stocks=80
-500 -> w=5, n_stocks=100
+multiplier = 10^3
+
+partition numbner w = 5
+
+n_stocks = n/w
+where n = n_binary_variables 
+e.g. in folder 100, n=100 -> n_stocks = 100/5 = 20
+
