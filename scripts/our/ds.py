@@ -5,6 +5,7 @@ from qiskit_optimization import QuadraticProgram
 from qiskit_optimization.algorithms import CplexOptimizer
 import cplex
 import time
+from copy import deepcopy
 
 # Classes built here: Datas, Problem
 
@@ -248,6 +249,9 @@ class Problem():
         elif M_strategy == "babbush_M":
             M = self.babbush_M()
             converter = LinearEqualityToPenalty(penalty = M)
+        elif M_strategy == "heuristic_PO_M":
+            M = self.heuristic_PO_M()
+            converter = LinearEqualityToPenalty(penalty = M)
         else:
             raise ValueError(f"M_strategy {M_strategy} not known")
         
@@ -255,6 +259,51 @@ class Problem():
         M = converter.penalty
         result = CplexOptimizer(disp = False).solve(qubo)
         return result, M
+    
+################################# START - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
+
+    def integer_mapper_PO(self, bin_per_int, mu, sigma, sigma_triangular = True):
+        mu2 = mu[bin_per_int-1 :: bin_per_int]
+        sigma2 = sigma[bin_per_int-1 :: bin_per_int, bin_per_int-1 :: bin_per_int]
+        if sigma_triangular:
+            sigma2 = (sigma2 + sigma2.T)/2
+        return mu2, sigma2
+
+    def greedy_heuristic(self, N, w, mu, sigma):
+        X = np.zeros((N), dtype = int)
+        obj = np.empty((N))
+        for j in range(2**w-1):
+            for k in range(N):
+                # compute new objective value, if we would add one unit (the j-th) of asset k
+                new_X = deepcopy(X)
+                new_X[k] += 1
+                obj[k] = -np.dot(mu, new_X) + np.dot(new_X, sigma@new_X)
+            winner = np.argmin(obj)
+            X[winner] += 1
+        f_X = -np.dot(mu, X) + np.dot(X, sigma@X)
+        return X, f_X
+
+    def heuristic_PO_M(self):
+        # compute M by greedy heuristic
+        n = self.n_vars # binary variables
+        w = 3
+        N = int(np.rint(n/w)) # integer variables
+
+        sigma = self.obj_quadratic
+        mu = -self.obj_linear
+        mu, sigma = self.integer_mapper_PO(w, mu, sigma)
+        
+        # find and evaluate feasible solution
+        X, f_feas = self.greedy_heuristic(N, w, mu, sigma)
+        print(f"Gre_M, f_feas = {f_feas}")
+
+        # evaluate unconstrained and continuous problem
+        f_unc = self.solve_unconstrained(how = "SDP")
+        print(f"Gre_M, f_unc = {f_unc}")
+        return f_feas - f_unc + .5
+
+################################# END - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
+
 
     def babbush_M(self):
         # compute M by max ( sum of all positive coeff,  sum of all negative coeff ) in obj funct
@@ -276,11 +325,11 @@ class Problem():
     def our_M(self):
         # find and evaluate feasible solution
         f_feas = self.get_feasible_sol_objective()
+        print(f"Our_M, f_feas = {f_feas}")
         # evaluate unconstrained and continuous problem
-        tic = time.time()
         f_unc = self.solve_unconstrained(how = "SDP")
-        tac = time.time()
-        print(f"SDP relaxation took {tac - tic} seconds")
+        print(f"Our_M, f_unc = {f_unc}")
+        #print(f"SDP relaxation took {tac - tic} seconds")
         return f_feas - f_unc + .5
 
 

@@ -129,16 +129,16 @@ def evaluate_feasibility(p, x, data, indexes):
 run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0], True)  """
 
 # ANALYZE DATASET
-bvars = np.arange(4, 5)
-n_samples = 4
-M_strategies = ["our_M", "qiskit_M", "optimal_M", "babbush_M"]
-M_strategies = ["qiskit_M"]
-test_set = "../../toys/NN_linear_deg5"
+bvars = np.arange(6, 19, 3)
+n_samples = 100
+#M_strategies = ["our_M", "qiskit_M", "optimal_M", "babbush_M"]
+M_strategies = ["heuristic_PO_M"]
+test_set = "../../toys/PO_sp500_part3_ra10_mult4"
 analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
 
 
 # Save Datas()
-# file = open("../../data/test.txt", "wb")
-# pickle.dump(data, file)
-# file.close()
+file = open("../../data/PO_greedy.txt", "wb")
+pickle.dump(data, file)
+file.close()
