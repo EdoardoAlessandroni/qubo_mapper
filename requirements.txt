@@ -1,0 +1,7 @@
+python==3.11.5
+numpy==1.26.0
+matplotlib==3.7.2
+qiskit_optimization==0.5.0
+cvxpy==1.4.1
+cplex==22.1.1.1
+mosek==10.1.15

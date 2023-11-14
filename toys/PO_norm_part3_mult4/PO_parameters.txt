@@ -1,0 +1,7 @@
+ra=1
+mult=10000
+part=3
+
+# ra = risk aversion, mult = multiplier, part = partition number w
+
+#normalized version with probability model rather that integers. Multiplier is used still

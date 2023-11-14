@@ -4,6 +4,22 @@ Samples in folders are named as random"seed"_"nvars"_"nconstraints".lp, for exam
 
 FOLDERS
 
+PON
+Bvars: range(6, 25, 3)
+Portfolio Optimization problems, but with normalized decision variables (i.e. probabilities): return (or risk) obtained from financial data is divided by (2^w-1)  (or (2^w-1)^2 ) so that integer variables formulation is equivalent to formulation with probabilities. PO parameters: partition number w == 3, multiplier == 1e4, risk aversion == 1.
+
+PO_big
+Bvars: range(10, 51, 10) + range(100, 201, 50) 
+Portfolio Optimization problems, with a big number of variables (not suitable for gap analysis), with parameters: partition number w == 5, multiplier == 1e4, risk aversion == 1.
+
+PO_sp500_part*w
+Same as below, but the data are taken from S&P500 financial data.
+
+PO_part*
+Bvars:	depending on w value, from 4/6 untill 22/24
+N_constraints: 1
+Portfolio Optimization problems, with parameters encoded in the folder name: part == partition number w, i.e. nuumber of qubits per asset, i.e. indicator of the granularity of the portfolio (2**w - 1 equal chunks); ra == risk aversion factor, i.e. multiplier of the risk, value are 05 (0.5), 10 (1) and 20 (2); mult == multiplier of Objective function parameters (Sigma for risk and mu for return), exponentiated with 10 base (e.g mult == 4 ---> multiplier = 1e4). 
+
 SPP_deg10
 Bvars:	range(6, 26)
 N_constraints:	max(1, int(n_vars/3))
@@ -47,46 +63,41 @@ Maximum degree: 10
 Number of samples = 1000
 NN stands for No Normalization (objective function stays with interger coefficients)
 
-
-NN_25
+NN_25 (deleted)
 Bvars:	range(4,25,2) + [30, 35, 40, 45, 50]
 N_constraints:	max(1, int(n_vars/4))
 Densities:	.25 for Q, L in objective function and for A constraint matrix
 Number of samples = 100
 NN stands for No Normalization (objective function stays with interger coefficients)
 
-
-NN_50
+NN_50 (deleted)
 Bvars:	range(4,25,2) + [30, 35, 40, 45, 50]
 N_constraints:	max(1, int(n_vars/4))
 Densities:	.5 for Q, L in objective function and for A constraint matrix
 Number of samples = 100
 NN stands for No Normalization (objective function stays with interger coefficients)
 
-
-NN
+NN (deleted)
 Bvars:	range(2,25,2) + [30, 35, 40, 45, 50]
 N_constraints:	max(1, int(n_vars/4))
 Densities:	1 for Q, L in objective function, .5 for A constraint matrix
 NN stands for No Normalization (objective function stays with interger coefficients)
 
-
-SN
+SN (deleted)
 Bvars:	range(2,21,2) + [24, 30, 35, 40, 45, 50]
 N_constraints:	max(1, int(n_vars/4))
 Densities:	1 for Q, L in objective function, .5 for A constraint matrix
 Number of samples = 100
 SN stands for Sampling Normalization (bounding spectral norm of Hamiltonian by sampling coefficients in objective function ~ 1/n^2)
 
-
-BN
+BN (deleted)
 Bvars:	range(2,29,2)
 N_constraints:	max(1, int(n_vars/4)).
 Densities:	1 for Q, L in objective function, .5 for A constraint matrix
 Number of samples = 100
 BN stands for Brute Normalization (computing full hamiltoinian and dividing by spectral gap)
 
-old
+old (deleted)
 Bvars:	range(2,21)
 N_constraints:	max(1, int(n_vars/3)).
 Densities:	1 for Q, L in objective function, .5 for A constraint matrix

@@ -270,6 +270,7 @@ class Problem():
         return mu2, sigma2
 
     def greedy_heuristic(self, N, w, mu, sigma):
+        #print("Matrix:", sigma)
         X = np.zeros((N), dtype = int)
         obj = np.empty((N))
         for j in range(2**w-1):
@@ -281,25 +282,30 @@ class Problem():
             winner = np.argmin(obj)
             X[winner] += 1
         f_X = -np.dot(mu, X) + np.dot(X, sigma@X)
+        
+        assert np.sum(X) == 2**w-1
         return X, f_X
 
     def heuristic_PO_M(self):
         # compute M by greedy heuristic
         n = self.n_vars # binary variables
-        w = 3
+        w = 5 ############ HARDCODED!
         N = int(np.rint(n/w)) # integer variables
 
         sigma = self.obj_quadratic
         mu = -self.obj_linear
         mu, sigma = self.integer_mapper_PO(w, mu, sigma)
         
+        tic = time.time()
         # find and evaluate feasible solution
         X, f_feas = self.greedy_heuristic(N, w, mu, sigma)
-        print(f"Gre_M, f_feas = {f_feas}")
+        tac = time.time()
+        print(f"\tHeuristic in {tac - tic} sec")
 
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "SDP")
-        print(f"Gre_M, f_unc = {f_unc}")
+        tic = time.time()
+        print(f"\tSDP in {tic - tac} sec")
         return f_feas - f_unc + .5
 
 ################################# END - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
@@ -325,10 +331,8 @@ class Problem():
     def our_M(self):
         # find and evaluate feasible solution
         f_feas = self.get_feasible_sol_objective()
-        print(f"Our_M, f_feas = {f_feas}")
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "SDP")
-        print(f"Our_M, f_unc = {f_unc}")
         #print(f"SDP relaxation took {tac - tic} seconds")
         return f_feas - f_unc + .5
 
