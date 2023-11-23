@@ -270,7 +270,6 @@ class Problem():
         return mu2, sigma2
 
     def greedy_heuristic(self, N, w, mu, sigma):
-        #print("Matrix:", sigma)
         X = np.zeros((N), dtype = int)
         obj = np.empty((N))
         for j in range(2**w-1):
@@ -300,7 +299,6 @@ class Problem():
         # find and evaluate feasible solution
         X, f_feas = self.greedy_heuristic(N, w, mu, sigma)
         tac = time.time()
-        print(f"\tHeuristic in {tac - tic} sec")
 
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "SDP")

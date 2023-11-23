@@ -168,8 +168,8 @@ run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 25, 3)
-bvars = [300]
-n_samples = 1
+bvars = [100]
+n_samples = 32
 #M_strategies = ["our_M", "qiskit_M", "optimal_M", "babbush_M"]
 M_strategies = ["heuristic_PO_M", "qiskit_M"]
 test_set = "../../toys/PO_big_norm"
@@ -180,4 +180,4 @@ data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
 # Save Datas()
 #file = open("../../data/PO_greedy_big_norm_200.txt", "wb")
 #pickle.dump(data, file)
-#ile.close()
+#file.close()
