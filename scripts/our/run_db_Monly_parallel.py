@@ -8,6 +8,9 @@ import pickle
 import warnings
 from time import time
 
+import multiprocessing as mp
+from itertools import product
+
 from ds import Datas, Problem
 
 
@@ -19,15 +22,12 @@ def run_instance_Monly(filename, M_strategies, data, indexes):
         p - the problem instance
         xs - the results got with the M strategies
     '''
-    tic = time()
     bvars = data.bvars[indexes[0]]
     m = ModelReader.read(filename, ignore_names=True)
-    tac = time()
     qp = from_docplex_mp(m)
     p = Problem(qp)
     p.qp.name = filename
     data.filenames[indexes[0], indexes[1]] = filename
-    tic = time()
     
     # solve quantumly to get M
     for M_idx in range(len(M_strategies)):
@@ -43,12 +43,12 @@ def run_instance_Monly(filename, M_strategies, data, indexes):
 
 
 
-def run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps):
+def run_test(test_set, bvars, n_samples, M_strategies):
     '''
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
     n_M_strategies = len(M_strategies)
-    data = Datas(bvars, n_samples, M_strategies) 
+    data = Datas(bvars, n_samples, M_strategies)
     for i in range(len(bvars)):
         n_qubs = bvars[i]
         print("\n" + str(n_qubs))
@@ -57,33 +57,33 @@ def run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps):
         files = sorted(listdir(folder))
         if len(files) < n_samples:
             raise ValueError(f"Folder {folder} contains only {len(files)} instances, {n_samples} were requested")
-        
+        filenames = [folder + fl for fl in files[:n_samples]]
+
+        args_iterable = product(zip(filenames, range(n_samples)), [M_strategies], [data], [i])
+
         tic = time()
-        for sample in range(n_samples):
-            filename = folder + files[sample]
-            print(sample, end = ", ")
-            p = run_instance_Monly(filename, M_strategies, data, [i, sample])
+        with mp.Pool() as pool:
+            results = pool.starmap(analyze_instance, args_iterable)
         tac = time()
         print(f"It took {tac - tic} sec")
     return data
 
-
-# run single instance
-""" d = Datas([4], 1, 1)
-run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0], True)  """
-
+def analyze_instance(file_n_sample, M_strategies, data, i):
+    filename, sample = file_n_sample
+    #print(f"filename={filename}\nsample {sample}\nM_strat: {M_strategies}\ni={i}\n")
+    print(sample, end = ", ")
+    return run_instance_Monly(filename, M_strategies, data, [i, sample])
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 25, 3)
-bvars = [75]
+bvars = [300]
 n_samples = 100
 M_strategies = ["heuristic_PO_M", "qiskit_M"]
 test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
-analyze_gaps = False
-data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
+data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
-file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_75.txt", "wb")
-pickle.dump(data, file)
-file.close()
+#file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_300_second.txt", "wb")
+#pickle.dump(data, file)
+#file.close()
