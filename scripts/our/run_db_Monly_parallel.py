@@ -74,12 +74,11 @@ def analyze_instance(file_n_sample, M_strategies, data, i):
 bvars = [30]
 n_samples = 10
 M_strategies = ["heuristic_PO_M", "qiskit_M"]
-test_set = "../../toys/PO_big_norm"
+test_set = "/home/users/edoardo.alessandroni/toys/PO_big_norm"
 data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
 #file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_300_second.txt", "wb")
-#file = open("../../data/PO_greedy_big_norm_300_second.txt", "wb")
 #pickle.dump(data, file)
 #file.close()

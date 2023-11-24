@@ -295,12 +295,9 @@ class Problem():
         tic = time.time()
         # find and evaluate feasible solution
         X, f_feas = self.greedy_heuristic(N, w, mu, sigma)
-        tac = time.time()
 
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "SDP")
-        tic = time.time()
-        print(f"\tSDP in {tic - tac} sec")
         return f_feas - f_unc + .5
 
 ################################# END - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
