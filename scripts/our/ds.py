@@ -31,9 +31,7 @@ class Datas():
         n_bvars = len(bvars) # bvars is a list containing the number of binary variables we wish to investigate, not necessarily consecutive
         self.filenames = np.ndarray((n_bvars, n_samples), dtype=object)
         # gaps are multiplied by -100 to spot problems: if we dont compute gaps but we plot it it's clear that we shouldn't look at it since that's negative
-        #self.gap = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # gap referring to    H_ob + M H_c  (H_ob may or may not be normalized, depending on the dataset)
         self.gap_norm = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # gap referring to    [H_ob + M H_c] / norm(H_ob + M H_c)  useful for QITE approach
-        #self.gap_minimal = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # gap referring to    [H_ob + M H_c]/2 + H_superp/2  useful for adiabatic approach
         self.fval = np.ndarray((n_bvars, n_samples, 2, n_M_strategies), dtype = int) # 3rd index: 0->classical solution  1->quantum solution
         self.M = np.ndarray((n_bvars, n_samples, n_M_strategies))
         self.is_optimum = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = bool)
@@ -42,7 +40,6 @@ class Datas():
         self.absolute_error = np.zeros((n_bvars, n_samples, n_M_strategies))
         self.n_violations = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = int)
         self.max_violation = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = int)
-        #self.time = np.ndarray((n_bvars, n_samples, n_M_strategies))
 
 
 # class Problem to tie together the QuadraticProgram from qiskit, its Ising formulation, the Ising formualtion of the constraints and their respective (obj and constraints) Hamiltonian matrix representation 2^n x 2^n.

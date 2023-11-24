@@ -5,7 +5,6 @@ from qiskit_optimization.converters import LinearEqualityToPenalty
 from qiskit_optimization.translators import from_docplex_mp
 from docplex.mp.model_reader import ModelReader
 import pickle
-import warnings
 from time import time
 
 import multiprocessing as mp
@@ -17,12 +16,10 @@ from ds import Datas, Problem
 
 def run_instance_Monly(filename, M_strategies, data, indexes):
     '''
-    Read LP file to get problem instance, solve it both in a classic and quantum way(s) and compute the gaps
+    Read LP file to get problem instance and compute the corresponding M only
     Return:
         p - the problem instance
-        xs - the results got with the M strategies
     '''
-    bvars = data.bvars[indexes[0]]
     m = ModelReader.read(filename, ignore_names=True)
     qp = from_docplex_mp(m)
     p = Problem(qp)
@@ -47,7 +44,6 @@ def run_test(test_set, bvars, n_samples, M_strategies):
     '''
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
-    n_M_strategies = len(M_strategies)
     data = Datas(bvars, n_samples, M_strategies)
     for i in range(len(bvars)):
         n_qubs = bvars[i]
@@ -70,20 +66,20 @@ def run_test(test_set, bvars, n_samples, M_strategies):
 
 def analyze_instance(file_n_sample, M_strategies, data, i):
     filename, sample = file_n_sample
-    #print(f"filename={filename}\nsample {sample}\nM_strat: {M_strategies}\ni={i}\n")
     print(sample, end = ", ")
     return run_instance_Monly(filename, M_strategies, data, [i, sample])
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 25, 3)
-bvars = [300]
-n_samples = 100
+bvars = [30]
+n_samples = 10
 M_strategies = ["heuristic_PO_M", "qiskit_M"]
-test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
+test_set = "../../toys/PO_big_norm"
 data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
 #file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_300_second.txt", "wb")
+#file = open("../../data/PO_greedy_big_norm_300_second.txt", "wb")
 #pickle.dump(data, file)
 #file.close()

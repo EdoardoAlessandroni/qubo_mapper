@@ -5,7 +5,6 @@ from qiskit_optimization.converters import LinearEqualityToPenalty
 from qiskit_optimization.translators import from_docplex_mp
 from docplex.mp.model_reader import ModelReader
 import pickle
-import warnings
 from time import time
 
 from ds import Datas, Problem
@@ -14,20 +13,15 @@ from ds import Datas, Problem
 
 def run_instance_Monly(filename, M_strategies, data, indexes):
     '''
-    Read LP file to get problem instance, solve it both in a classic and quantum way(s) and compute the gaps
+    Read LP file to get problem instance and compute the corresponding M only
     Return:
         p - the problem instance
-        xs - the results got with the M strategies
     '''
-    tic = time()
-    bvars = data.bvars[indexes[0]]
     m = ModelReader.read(filename, ignore_names=True)
-    tac = time()
     qp = from_docplex_mp(m)
     p = Problem(qp)
     p.qp.name = filename
     data.filenames[indexes[0], indexes[1]] = filename
-    tic = time()
     
     # solve quantumly to get M
     for M_idx in range(len(M_strategies)):
@@ -43,11 +37,10 @@ def run_instance_Monly(filename, M_strategies, data, indexes):
 
 
 
-def run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps):
+def run_test(test_set, bvars, n_samples, M_strategies):
     '''
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
-    n_M_strategies = len(M_strategies)
     data = Datas(bvars, n_samples, M_strategies) 
     for i in range(len(bvars)):
         n_qubs = bvars[i]
@@ -75,15 +68,15 @@ run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 25, 3)
-bvars = [75]
-n_samples = 100
+bvars = [30]
+n_samples = 10
 M_strategies = ["heuristic_PO_M", "qiskit_M"]
-test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
-analyze_gaps = False
-data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
+test_set = "../../edoardo.alessandroni/codes/toys/PO_big_norm"
+data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
-file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_75.txt", "wb")
-pickle.dump(data, file)
-file.close()
+#file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_75.txt", "wb")
+#file = open("../../data/PO_greedy_big_norm_75.txt", "wb")
+#pickle.dump(data, file)
+#file.close()
