@@ -130,17 +130,17 @@ run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 10, 3)
-bvars = [200]
-n_samples = 1
-#M_strategies = ["our_M", "qiskit_M", "optimal_M", "babbush_M"]
+bvars = [6, 9]
+n_samples = 200
 M_strategies = ["our_M", "qiskit_M"]
-#M_strategies = ["heuristic_PO_M", "qiskit_M"]
-test_set = "../../toys/PO_big"
-analyze_gaps = False
+test_set = "../../toys/PO_norm_part3_mult4"
+#test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_norm_part3_mult4"
+analyze_gaps = True
 data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
 
 
 # Save Datas()
-#file = open("../../data/PO_norm_part3_mult4_pt2.txt", "wb")
+#file = open("../../data/test44.txt", "wb")
+#file = open("/home/users/edoardo.alessandroni/codes/data/test_44.txt", "wb")
 #pickle.dump(data, file)
 #file.close()
