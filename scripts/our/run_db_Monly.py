@@ -23,7 +23,7 @@ def run_instance_Monly(filename, M_strategies, data, indexes):
     p.qp.name = filename
     data.filenames[indexes[0], indexes[1]] = filename
     
-    # solve quantumly to get M
+    # compute M
     for M_idx in range(len(M_strategies)):
         if M_strategies[M_idx] == "heuristic_PO_M":
             M = p.heuristic_PO_M()
@@ -41,16 +41,17 @@ def run_test(test_set, bvars, n_samples, M_strategies):
     '''
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
-    data = Datas(bvars, n_samples, M_strategies) 
+    data = Datas(bvars, n_samples, M_strategies)
+    # get filenames
     for i in range(len(bvars)):
         n_qubs = bvars[i]
         print("\n" + str(n_qubs))
-
         folder = test_set+"/"+str(n_qubs)+"/"
         files = sorted(listdir(folder))
         if len(files) < n_samples:
             raise ValueError(f"Folder {folder} contains only {len(files)} instances, {n_samples} were requested")
         
+        # run instances
         tic = time()
         for sample in range(n_samples):
             filename = folder + files[sample]
@@ -68,16 +69,16 @@ run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,
 
 # ANALYZE DATASET
 #bvars = np.arange(6, 25, 3)
-bvars = [30]
-n_samples = 10
-M_strategies = ["heuristic_PO_M", "qiskit_M"]
+bvars = [10]
+n_samples = 5
+M_strategies = ["heuristic_PO_M"]
 test_set = "../../toys/PO_big_norm"
 #test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
 data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
-#file = open("../../data/PO_greedy_big_norm_75.txt", "wb")
+#file = open("../../data/test_sdp_big.txt", "wb")
 #file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_75.txt", "wb")
 #pickle.dump(data, file)
 #file.close()

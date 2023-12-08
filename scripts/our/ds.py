@@ -347,6 +347,7 @@ class Problem():
             constraints += [X[i,i] == X[0,i] for i in range(1, n+1) ]
             constraints += [X[i,j] <= 1 for i in range(n+1) for j in range(i, n+1) ]
             constraints += [X[i,j] >= 0 for i in range(n+1) for j in range(i, n+1) ]
+            #constraints += [X[0,0] == 1]         ########## CHANGED TO TEST SOMETHING
             prob = cp.Problem(cp.Minimize(cp.trace(Q_tilde @ X)), constraints)
             prob.solve(solver = "MOSEK")
             #X = prob.variables()[0].value
