@@ -85,7 +85,7 @@ n = range(6,25,3)
 pars: w=3, mult=1e4, ra=1
 M_strategies = ["heuristic_PO_M"]
 
-PO_greedy_big_norm.txt
+PO_norm_big_greedy.txt
 Portfolio Optimization, Markowitz model, (NORMalized formulation)
 n = range(10,51,10) + [75] + range(100, 301, 50)
 100 samples
