@@ -101,9 +101,8 @@ def evaluate_feasibility(p, x, data, indexes):
 run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0], True)  """
 
 # ANALYZE DATASET
-bvars = np.arange(6, 10, 1)
-bvars = [9]
-n_samples = 5
+bvars = np.arange(6, 19, 3)
+n_samples = 2
 M_strategies = ["our_M", "qiskit_M"]
 test_set = "../../toys/PO_norm_part3_mult4"
 #test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_norm_part3_mult4"
@@ -115,4 +114,4 @@ data = run_test(test_set, bvars, n_samples, M_strategies, analyze_gaps)
 #file = open("../../data/test44.txt", "wb")
 #file = open("/home/users/edoardo.alessandroni/codes/data/test_44.txt", "wb")
 #pickle.dump(data, file)
-#file.close()
+#cfile.close()

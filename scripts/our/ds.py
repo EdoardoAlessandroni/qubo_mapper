@@ -9,18 +9,6 @@ from copy import deepcopy
 
 # Classes built here: Datas, Problem
 
-""" def initial_hamiltonian_adiabatic(n):
-    H = -kron_x_i(0,n)
-    for i in range(1, n):
-        H -= kron_x_i(i, n)
-    return H
-
-def kron_x_i(i, n):
-    x = np.array([[0,1],[1,0]])
-    id1 = np.eye(int(2**(i)))
-    id2 = np.eye(int(2**(n-i-1)))
-    return np.kron( np.kron(id1, x), id2 )
- """
 
 # get relevant data over many instances and bumber of variables with class Datas
 class Datas():
@@ -89,8 +77,8 @@ class Problem():
         '''
         # first we move the terms of the form q_ii x_i x_i to the linear vector as x_i^2 = x_1
         L = self.obj_linear + np.diag(self.obj_quadratic)
-        Q = self.obj_quadratic - np.diag(np.diag(self.obj_quadratic)) ### THAT WAS CHANGED
-        const = self.qp.objective.constant  ### THAT WAS ADDED
+        Q = self.obj_quadratic - np.diag(np.diag(self.obj_quadratic))
+        const = self.qp.objective.constant
         n = self.n_vars
 
         # then we map it to the J and h matrix of the Ising formulation
@@ -104,7 +92,7 @@ class Problem():
             for j in range(i+1, n):
                 J[i,j] = Q[i,j]/4
 
-        return J, h, const_term  ### THAT WAS CHANGED
+        return J, h, const_term
 
 
     def constraints_to_qubo_form(self):
@@ -133,9 +121,9 @@ class Problem():
         Q, L, old_const_term = self.constraints_to_qubo_form()
         n = self.n_vars
 
-        # move terms from diagonal # THAT WAS ADDED
-        L += np.diag(Q)             # THAT WAS ADDED
-        Q -= np.diag(np.diag(Q))    # THAT WAS ADDED
+        # move terms from diagonal
+        L += np.diag(Q)            
+        Q -= np.diag(np.diag(Q))   
 
         # map to ising formulation
         h = np.ndarray(n)
@@ -201,39 +189,51 @@ class Problem():
 
 
     def get_obj_hamiltonian(self):
-        J, h, const = self.to_ising() # THAT WAS changed
-        return self.from_ising_to_hamiltonian(J, h, const) # THAT WAS changed
+        '''
+        Get Ising Hamiltonian of the objective function 
+        '''
+        J, h, const = self.to_ising()
+        return self.from_ising_to_hamiltonian(J, h, const)
     
     
     def get_constraint_hamiltonian(self):
+        '''
+        Get Ising Hamiltonian of the constraint penalization part 
+        '''
         J, h, const = self.constraints_to_ising_form()
         return self.from_ising_to_hamiltonian(J, h, const)
-    
-
-    def normalize_problem(self, norm_H):
-        # normalize objective function
-        self.obj_quadratic = self.obj_quadratic / norm_H
-        self.obj_linear = self.obj_linear / norm_H
-        self.qp.minimize(linear = self.obj_linear, quadratic = self.obj_quadratic)
-        return
 
 
-    def get_gap_objective(self, evs_H):
-        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
+    def get_gap_objective(self, evs):
+        '''
+        Get (non-normalized) gap of the input set of eigenvalues
+        '''
+        evs = np.unique(evs.round(decimals=14))
         return evs[1] - evs[0]
     
 
     def get_gap_total(self, H, Hc, M):
+        '''
+        Get (non-normalized) gap of the input Ising form in the penalized qubo formulation 
+        '''
         evs = H + M*Hc
-        evs = np.unique(evs.round(decimals=14))   ### THAT WAS CHANGED
-        #evs = np.partition(evs, kth=1)[:2]
+        evs = np.unique(evs.round(decimals=14))
         return evs[1] - evs[0]
     
+
     def solve_exact(self):
+        '''
+        Exactly solve the problem with CPLEX
+        '''
         result = CplexOptimizer(disp = False).solve(self.qp)
         return result
 
+
     def solve_quantum(self, M_strategy):
+        '''
+        Solve the problem, mapping to the QUBO formulation with the specified M strategy.
+        Returns the 'result' of CPLEX, together with M computed
+        '''
         # choose M
         if M_strategy == "qiskit_M":
             converter = LinearEqualityToPenalty()
@@ -257,16 +257,22 @@ class Problem():
         result = CplexOptimizer(disp = False).solve(qubo)
         return result, M
     
-################################# START - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
 
     def integer_mapper_PO(self, bin_per_int, mu, sigma, sigma_triangular = True):
+        '''
+        Maps the binary-suitable instance parameters (mu and sigma) to the integer-suitable form
+        '''
         mu2 = mu[bin_per_int-1 :: bin_per_int]
         sigma2 = sigma[bin_per_int-1 :: bin_per_int, bin_per_int-1 :: bin_per_int]
         if sigma_triangular:
             sigma2 = (sigma2 + sigma2.T)/2
         return mu2, sigma2
 
+
     def greedy_heuristic(self, N, w, mu, sigma):
+        '''
+        Implements greedy algorithm to return nearly-optimal solution and its obj function value, given the instance parameters
+        '''
         X = np.zeros((N), dtype = int)
         obj = np.empty((N))
         for j in range(2**w-1):
@@ -282,25 +288,41 @@ class Problem():
         assert np.sum(X) == 2**w-1
         return X, f_X
 
+
     def heuristic_PO_M(self):
+        '''
+        Computes the greedy M: lower bound with SDP and upper bound with greedy PortOpt strategy (function: greedy_heuristic)
+        '''
         # compute M by greedy heuristic
         n = self.n_vars # binary variables
-        w = 5 ############ HARDCODED!
+        w = self.infer_partition_number()
         N = int(np.rint(n/w)) # integer variables
 
         sigma = self.obj_quadratic
         mu = -self.obj_linear
         mu, sigma = self.integer_mapper_PO(w, mu, sigma)
         
-        tic = time.time()
         # find and evaluate feasible solution
         X, f_feas = self.greedy_heuristic(N, w, mu, sigma)
 
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "SDP")
         return f_feas - f_unc + .5
+    
 
-################################# END - NEW STUFF FOR GREEDY ALGORITHM, CLEAN IT
+    def infer_partition_number(self):
+        '''
+        Returns the partition number w of the instance, from its filename (contains "part[w]")
+        '''
+        filename = self.qp.name
+        for idx in range(0, len(filename)):
+            if filename[idx] == "p" and filename[idx+1 : idx+4] == "art":
+                w = int(filename[idx+4])
+                break
+
+        if idx >= len(filename) -1:
+            raise ValueError("Partition number can't be extracted from filename")
+        return w
 
 
     def babbush_M(self):
@@ -313,12 +335,14 @@ class Problem():
         sum = np.max([sum_pos, -sum_neg])
         return 1 + sum
 
+
     def optimal_M(self):
         # find and evaluate feasible solution
         f = self.solve_exact().fval
         # evaluate unconstrained and continuous problem
         f_unc = self.solve_unconstrained(how = "exact")
         return f - f_unc + .5
+
 
     def our_M(self):
         # find and evaluate feasible solution
@@ -347,7 +371,7 @@ class Problem():
             constraints += [X[i,i] == X[0,i] for i in range(1, n+1) ]
             constraints += [X[i,j] <= 1 for i in range(n+1) for j in range(i, n+1) ]
             constraints += [X[i,j] >= 0 for i in range(n+1) for j in range(i, n+1) ]
-            #constraints += [X[0,0] == 1]         ########## CHANGED TO TEST SOMETHING
+            #constraints += [X[0,0] == 1]      ###### alternative way of imposing boundness, rather than  0 <= X_ij <= 1  for all i,j (2 previous lines)
             prob = cp.Problem(cp.Minimize(cp.trace(Q_tilde @ X)), constraints)
             prob.solve(solver = "MOSEK")
             #X = prob.variables()[0].value
@@ -367,6 +391,9 @@ class Problem():
 
     
     def get_feasible_sol_objective(self):
+        '''
+        Geta feasible solution, first running on CPLEX for a max of 10 secs, then, if the solution found is not feasible, another run starts with a focus on feasibility
+        '''
         model = cplex.Cplex(self.qp.name)
         model.parameters.timelimit.set(10)
         model.set_results_stream(None)
@@ -387,6 +414,9 @@ class Problem():
 
 
     def write_to_lp_file(self, filename = None):
+        '''
+        Export the Problem as a lp string and writes on file
+        '''
         lp_string = self.qp.export_as_lp_string()
         if filename is None:
             filename = self.qp.name

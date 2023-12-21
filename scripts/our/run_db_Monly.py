@@ -68,11 +68,10 @@ run_instance("../../toys/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,
 
 
 # ANALYZE DATASET
-#bvars = np.arange(6, 25, 3)
-bvars = [10]
-n_samples = 5
+bvars = np.arange(10, 21, 10)
+n_samples = 2
 M_strategies = ["heuristic_PO_M"]
-test_set = "../../toys/PO_big_norm"
+test_set = "../../toys/PO_norm_big_part5"
 #test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
 data = run_test(test_set, bvars, n_samples, M_strategies)
 
