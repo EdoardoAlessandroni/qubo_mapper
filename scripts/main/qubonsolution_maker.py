@@ -85,7 +85,7 @@ def post_process_filenames(filenames):
 bvars = np.arange(21, 22)
 n_samples = 10
 M_strategies = ["our_M", "qiskit_M"]
-test_set = "../../toys/PO_sp500_part3_ra10_mult2"
+test_set = "../../problems/PO_sp500_part3_ra10_mult2"
 towrite_folder = "easy_toys_adiabevol/PO_sp500_part3_ra10_mult2"
 
 for i in range(len(bvars)):

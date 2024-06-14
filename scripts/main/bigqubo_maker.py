@@ -55,8 +55,8 @@ bvars = [100]
 n_samples = 20
 M_strategies = ["our_M", "qiskit_M"]
 #M_strategies = ["our_M"]
-#input_test_set = "../../toys/PO_sp500_part3_ra10_mult4"
-input_test_set = "../../toys/PO_big"
+#input_test_set = "../../problems/PO_sp500_part3_ra10_mult4"
+input_test_set = "../../problems/PO_big"
 output_directory = "big_qubos"
 #output_directory = "try_dir"
 

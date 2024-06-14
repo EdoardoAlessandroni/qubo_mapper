@@ -267,4 +267,4 @@ print(p.qp.export_as_lp_string()) """
 degree = 5
 n_samples = 1000
 for nvars in bvars:
-    build_database("../toys/SPP_p15", "NN", n_samples, nvars, max_degree = degree, SPP=True) """
+    build_database("../problems/SPP_p15", "NN", n_samples, nvars, max_degree = degree, SPP=True) """

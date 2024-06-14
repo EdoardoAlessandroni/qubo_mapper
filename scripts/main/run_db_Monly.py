@@ -7,9 +7,6 @@ from docplex.mp.model_reader import ModelReader
 import pickle
 from time import time
 
-import multiprocessing as mp
-from itertools import product
-
 from ds import Datas, Problem
 
 
@@ -26,7 +23,7 @@ def run_instance_Monly(filename, M_strategies, data, indexes):
     p.qp.name = filename
     data.filenames[indexes[0], indexes[1]] = filename
     
-    # solve quantumly to get M
+    # compute M
     for M_idx in range(len(M_strategies)):
         if M_strategies[M_idx] == "heuristic_PO_M":
             M = p.heuristic_PO_M()
@@ -45,40 +42,42 @@ def run_test(test_set, bvars, n_samples, M_strategies):
     Run simulation of problems (read from files) for different number of qubits, M-choice strategies, and samples and return data acquired
     '''
     data = Datas(bvars, n_samples, M_strategies)
+    # get filenames
     for i in range(len(bvars)):
         n_qubs = bvars[i]
         print("\n" + str(n_qubs))
-
         folder = test_set+"/"+str(n_qubs)+"/"
         files = sorted(listdir(folder))
         if len(files) < n_samples:
             raise ValueError(f"Folder {folder} contains only {len(files)} instances, {n_samples} were requested")
-        filenames = [folder + fl for fl in files[:n_samples]]
-
-        args_iterable = product(zip(filenames, range(n_samples)), [M_strategies], [data], [i])
-
+        
+        # run instances
         tic = time()
-        with mp.Pool() as pool:
-            results = pool.starmap(analyze_instance, args_iterable)
+        for sample in range(n_samples):
+            filename = folder + files[sample]
+            print(sample, end = ", ")
+            p = run_instance_Monly(filename, M_strategies, data, [i, sample])
         tac = time()
         print(f"It took {tac - tic} sec")
     return data
 
-def analyze_instance(file_n_sample, M_strategies, data, i):
-    filename, sample = file_n_sample
-    print(sample, end = ", ")
-    return run_instance_Monly(filename, M_strategies, data, [i, sample])
+
+# run single instance
+""" d = Datas([4], 1, 1)
+run_instance("../../problems/NN_linear_deg5/4/random10042_4_1.lp", ["our_M"], d, [0,0], True)  """
+
 
 # ANALYZE DATASET
-#bvars = np.arange(6, 25, 3)
-bvars = [30]
-n_samples = 10
-M_strategies = ["heuristic_PO_M", "qiskit_M"]
-test_set = "/home/users/edoardo.alessandroni/codes/toys/PO_big_norm"
+bvars = np.arange(10, 21, 10)
+n_samples = 2
+M_strategies = ["heuristic_PO_M"]
+test_set = "../../problems/PO_norm_big_part5"
+#test_set = "/home/users/edoardo.alessandroni/codes/problems/PO_big_norm"
 data = run_test(test_set, bvars, n_samples, M_strategies)
 
 
 # Save Datas()
-#file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_300_second.txt", "wb")
+#file = open("../../data/test_sdp_big.txt", "wb")
+#file = open("/home/users/edoardo.alessandroni/codes/data/PO_greedy_big_norm_75.txt", "wb")
 #pickle.dump(data, file)
 #file.close()
