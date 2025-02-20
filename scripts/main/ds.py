@@ -20,6 +20,8 @@ class Datas():
         self.filenames = np.ndarray((n_bvars, n_samples), dtype=object)
         # gaps are multiplied by -100 to spot problems: if we dont compute gaps but we plot it it's clear that we shouldn't look at it since that's negative
         self.gap_norm = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # gap referring to    [H_ob + M H_c] / norm(H_ob + M H_c)  useful for QITE approach
+        self.spec_norm = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # spectral norm := max_energy - min_energy    for  H = H_ob + M H_c
+        self.max_ener = -100*np.ones((n_bvars, n_samples, n_M_strategies)) # max_energy - min_energy    for  H = H_ob + M H_c
         self.fval = np.ndarray((n_bvars, n_samples, 2, n_M_strategies), dtype = int) # 3rd index: 0->classical solution  1->quantum solution
         self.M = np.ndarray((n_bvars, n_samples, n_M_strategies))
         self.is_optimum = np.zeros((n_bvars, n_samples, n_M_strategies), dtype = bool)
