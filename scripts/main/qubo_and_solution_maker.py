@@ -5,11 +5,13 @@ from qiskit_optimization.translators import from_docplex_mp
 from docplex.mp.model_reader import ModelReader
 from qiskit_optimization.converters import LinearEqualityToPenalty
 import warnings
-from qiskit_optimization.algorithms import OptimizationResultStatus
+from qiskit_optimization.algorithms import OptimizationResultStatus, CplexOptimizer
+from qiskit_optimization import QuadraticProgram
 import pickle
 
 def build_qubo(n_qubs, folder, file, M_strat, towrite_folder):
-    ''' Builds the QUBO with a given Big-M strategy and writes it on file '''
+    ''' Builds the QUBO with a given Big-M strategy and writes it on file.
+        Added: write also the normalized spectral gap and the maximum eigenvalue of the QUBO hamiltonian (max_ener) '''
     m = ModelReader.read(folder + file, ignore_names=True)
     qp = from_docplex_mp(m)
     p = Problem(qp)
@@ -48,7 +50,8 @@ def build_qubo(n_qubs, folder, file, M_strat, towrite_folder):
     return 
 
 def solve_qubo(n_qubs, folder, file, towrite_folder):
-    ''' Writes the 'constrained' problem on file, along with its solution (x, f(x)), in another file '''
+    ''' Writes the 'constrained' problem on file, along with its solution (x, f(x)), in another file.
+        Added: write to file also the maximum energy _in the feasible subspace_, i.e. max_feas'''
     m = ModelReader.read(folder + file, ignore_names=True)
     qp = from_docplex_mp(m)
     p = Problem(qp)
@@ -71,11 +74,22 @@ def solve_qubo(n_qubs, folder, file, towrite_folder):
     qp.name = file
     filename = f"../{towrite_folder}/{n_qubs}/constrained/{file}"
     qp.write_to_lp_file(filename)
-    print(f"Constrained and solution wrote")
+
+    # create maximization problem and write maximum feasible energy to file
+    qp_max = create_maximization(qp)
+    res_max = CplexOptimizer(disp = False).solve(qp_max)
+    max_en_feas, x_max = np.rint(res_max.fval), np.rint(res_max.x).astype(int)
+    filename = f"../{towrite_folder}/{n_qubs}/max_feas/{file}"
+    f = open(filename, "w")
+    f.write(f"x = {x_max}\nf(x) = {max_en_feas}\n")
+    f.close()
+
+    print(f"Constrained, solution and max feas wrote")
     return 
 
 
 def spectral_gap(n_qubs, file, M_strat):
+    ''' returns normalized spectral gap AND maximum eigenvalue of QUBO hamiltonian for a given M_strategy'''
     datafile = open("../../data/" + problem_set + "_maxener.txt", "rb")       ############ "_maxener" is added so the Data instance open and analyzed is the one that not only has the spectral gap, but the maximum energy (and spectral norm) too
     data = pickle.load(datafile)
     datafile.close()
@@ -123,6 +137,22 @@ def post_process_filenames(filenames):
     return new_filenames
 
 
+def create_maximization(qp):
+    ''' returns a QuadraticProgram, akin to input, but with inverted objective function
+        (maximise instead  of minimize, with same constraints)'''
+    n = qp.get_num_binary_vars()
+    l_const = qp.linear_constraints
+    obj = qp.objective
+    qpt = QuadraticProgram()
+    for i in range(n):
+        qpt.binary_var()
+    qpt.maximize(constant=0, linear=obj.linear.to_array(), quadratic=obj.quadratic.to_array())
+    for l in l_const:
+        qpt.linear_constraint(linear = l.linear.to_array(), sense = l.sense, rhs = l.rhs)
+    #print(qpt.export_as_lp_string())
+    return qpt
+
+
 
 
 
@@ -134,7 +164,7 @@ bvars = np.arange(6, 25, 6)
 n_samples = 25
 M_strategies = ["ourM", "qiskitM"]
 
-problem_set = "NN_linear_deg5"
+problem_set = "PO_norm_part3_mult4"
 towrite_folder = "toys_adiabevol_simul/" + problem_set
 
 

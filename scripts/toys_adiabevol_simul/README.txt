@@ -16,6 +16,7 @@ DIRECTORY STRUCTURE:
 	inst_names.txt --> filenames of 25 big-gap instances
 	constrained --> original constrained quadratic problem
 	solution --> solution point (x) and value (f(x)) of the constrained problem
+	max_feas --> solution point (x) and value (f(x)) of the corresponding maximization constrained problem. I.e. maximum feasible energy
 	ourM --> QUBO reformualtion using our method
 	qiskM --> QUBO reformualtion using qiskit method
 
